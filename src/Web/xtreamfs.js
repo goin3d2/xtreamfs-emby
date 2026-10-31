@@ -271,6 +271,12 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
             }, function () { $('#xfsCatNote').textContent = 'Could not load categories.'; });
         }
         $('#xfsLive').addEventListener('click', function () { loadCats(true); });
+        // Turning on "Include all" ticks every category; untick any you want to exclude afterwards.
+        $('#xfsCatPanes').addEventListener('change', function (e) {
+            var t = e.target;
+            if (!t.classList || !t.classList.contains('xfs-all') || !t.checked) { return; }
+            $$('.xfs-inc[data-kind="' + t.getAttribute('data-kind') + '"]').forEach(function (x) { x.checked = true; });
+        });
         $('#xfsCatSave').addEventListener('click', function () {
             if (!catData || !config) { return; }
             var c = config;
