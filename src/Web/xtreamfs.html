@@ -1,0 +1,195 @@
+<div id="xtreamfsPage" data-role="page" class="page type-interior pluginConfigurationPage xfs" data-title="xtreamfs"
+     data-require="emby-input,emby-button,emby-checkbox,emby-select" data-controller="__plugin/xtreamfsjs">
+<style>
+.xfs{--xfs-accent:#f5b83d;--xfs-panel:rgba(128,128,128,.10);--xfs-line:rgba(128,128,128,.25);--xfs-muted:rgba(128,128,128,1);--xfs-ok:#48bb78;--xfs-bad:#f56565}
+.xfs .xfs-tabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 1.4em;border-bottom:1px solid var(--xfs-line)}
+.xfs .xfs-tab{background:none;border:0;color:inherit;opacity:.65;padding:.7em 1em;font:inherit;cursor:pointer;position:relative}
+.xfs .xfs-tab:hover{opacity:1}
+.xfs .xfs-tab.on{opacity:1;font-weight:600}
+.xfs .xfs-tab.on::after{content:"";position:absolute;left:1em;right:1em;bottom:-1px;height:3px;border-radius:2px;background:var(--xfs-accent);box-shadow:0 0 10px rgba(245,184,61,.55)}
+.xfs .xfs-pane{display:none}.xfs .xfs-pane.on{display:block}
+.xfs .xfs-card{background:var(--xfs-panel);border:1px solid var(--xfs-line);border-radius:10px;padding:1.1em 1.3em;margin-bottom:1.1em;overflow-wrap:anywhere}
+.xfs .xfs-card h3{margin:0 0 .6em;font-size:1em;font-weight:500;opacity:.75}
+.xfs .xfs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1em;margin-bottom:1.1em}
+.xfs .xfs-grid .xfs-card{margin:0}
+.xfs .xfs-big{font-size:2.1em;font-weight:700;line-height:1.1}
+.xfs .xfs-phase{font-size:2.3em;font-weight:700;line-height:1.1}
+.xfs .xfs-muted{opacity:.7}
+.xfs .xfs-small{font-size:.85em}
+.xfs .xfs-row{display:flex;gap:.8em;align-items:center;flex-wrap:wrap}
+.xfs .xfs-between{justify-content:space-between;align-items:flex-start}
+.xfs .xfs-strip{position:relative;height:44px;margin:1.1em 0 .5em;background:#0e1020;border-radius:4px;overflow:hidden;
+  --hole:repeating-linear-gradient(90deg,transparent 0 7px,#2a2e4c 7px 17px,transparent 17px 24px)}
+.xfs .xfs-strip::before,.xfs .xfs-strip::after{content:"";position:absolute;left:0;right:0;height:7px;background:var(--hole);z-index:2}
+.xfs .xfs-strip::before{top:4px}.xfs .xfs-strip::after{bottom:4px}
+.xfs .xfs-frames{position:absolute;inset:14px 0;background:repeating-linear-gradient(90deg,#1c2036 0 46px,#0e1020 46px 50px)}
+.xfs .xfs-fill{position:absolute;top:14px;bottom:14px;left:0;width:0;transition:width .6s ease;
+  background:repeating-linear-gradient(90deg,var(--xfs-accent) 0 46px,#0e1020 46px 50px);box-shadow:0 0 16px rgba(245,184,61,.35)}
+.xfs .xfs-strip.running::before,.xfs .xfs-strip.running::after{animation:xfs-sprockets 1.2s linear infinite}
+@keyframes xfs-sprockets{to{background-position:24px 0}}
+@media (prefers-reduced-motion:reduce){.xfs *{animation:none!important;transition:none!important}}
+.xfs .xfs-log{background:rgba(128,128,128,.12);border:1px solid var(--xfs-line);border-radius:8px;font:12px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;padding:.6em .9em;overflow:auto}
+.xfs .xfs-log .WARNING{color:var(--xfs-accent)}.xfs .xfs-log .ERROR{color:var(--xfs-bad)}
+.xfs #xfsRecent{max-height:10em;margin-top:1em}
+.xfs #xfsRecent:empty{display:none}
+.xfs #xfsLog{height:62vh}
+.xfs table{width:100%;border-collapse:collapse}
+.xfs th,.xfs td{text-align:left;padding:.5em .6em;border-bottom:1px solid var(--xfs-line);vertical-align:middle}
+.xfs th{font-weight:500;opacity:.7;white-space:nowrap}
+.xfs td.num,.xfs th.num{text-align:right;font-variant-numeric:tabular-nums}
+.xfs .xfs-tablewrap{overflow-x:auto}
+.xfs .xfs-badge{display:inline-block;font-size:.75em;padding:.1em .6em;border-radius:99px;background:var(--xfs-panel);border:1px solid var(--xfs-line)}
+.xfs .xfs-badge.new{background:var(--xfs-accent);border-color:var(--xfs-accent);color:#1b1404;font-weight:600}
+.xfs .xfs-alert{border:1px solid var(--xfs-line);border-left:4px solid var(--xfs-accent);background:var(--xfs-panel);border-radius:8px;padding:.8em 1em;margin-bottom:1.1em}
+.xfs .xfs-alert.bad{border-left-color:var(--xfs-bad)}
+.xfs .xfs-check{list-style:none;padding:0;margin:.4em 0 0}
+.xfs .xfs-check li{padding:.35em 0;display:flex;gap:.6em;align-items:baseline}
+.xfs .xfs-check .dot{width:1.2em;flex:none;text-align:center;font-weight:700}
+.xfs .xfs-check .done .dot{color:var(--xfs-ok)}.xfs .xfs-check .todo .dot{color:var(--xfs-accent)}
+.xfs .xfs-note.ok{color:var(--xfs-ok)}.xfs .xfs-note.bad{color:var(--xfs-bad)}
+.xfs .xfs-catfolder{min-width:12em}
+.xfs .xfs-catfolder input{width:100%;box-sizing:border-box;padding:.4em .6em;border-radius:5px;border:1px solid var(--xfs-line);background:transparent;color:inherit;font:inherit}
+.xfs .xfs-pulse{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:rgba(128,128,128,.7);margin-right:.45em;vertical-align:middle}
+.xfs .xfs-pulse.busy{background:var(--xfs-accent);animation:xfs-onair 1.6s infinite}
+@keyframes xfs-onair{0%{box-shadow:0 0 0 0 rgba(245,184,61,.7)}70%{box-shadow:0 0 0 8px rgba(245,184,61,0)}100%{box-shadow:0 0 0 0 rgba(245,184,61,0)}}
+</style>
+<div data-role="content">
+<div class="content-primary">
+
+  <div class="xfs-row xfs-between" style="margin-bottom:.4em">
+    <h1 style="margin:0">xtreamfs</h1>
+    <span class="xfs-muted"><span class="xfs-pulse" id="xfsPulse"></span><span id="xfsPill">Connecting</span></span>
+  </div>
+  <p class="xfs-muted" style="margin-top:.3em">Your IPTV provider's movies and series as a .strm library, with folder names that stay put between refreshes.</p>
+
+  <div class="xfs-tabs" role="tablist">
+    <button type="button" class="xfs-tab on" data-tab="status">Status</button>
+    <button type="button" class="xfs-tab" data-tab="categories">Categories</button>
+    <button type="button" class="xfs-tab" data-tab="settings">Settings</button>
+    <button type="button" class="xfs-tab" data-tab="account">Account</button>
+    <button type="button" class="xfs-tab" data-tab="log">Log</button>
+  </div>
+
+  <!-- Status -->
+  <div class="xfs-pane on" data-pane="status">
+    <div id="xfsAlerts"></div>
+    <div class="xfs-card" id="xfsSetup" style="display:none">
+      <h3>Getting started</h3>
+      <ul class="xfs-check" id="xfsChecklist"></ul>
+    </div>
+    <div class="xfs-card">
+      <div class="xfs-row xfs-between">
+        <div>
+          <h3>Catalog refresh</h3>
+          <div class="xfs-phase" id="xfsPhase">…</div>
+          <div class="xfs-muted" id="xfsDetail" style="margin-top:.35em"></div>
+        </div>
+        <button is="emby-button" type="button" class="raised button-submit" id="xfsRefresh"><span>Refresh now</span></button>
+      </div>
+      <div class="xfs-strip" id="xfsStrip"><div class="xfs-frames"></div><div class="xfs-fill" id="xfsFill"></div></div>
+      <div class="xfs-muted xfs-small" id="xfsMeta"></div>
+      <div class="xfs-log" id="xfsRecent"></div>
+    </div>
+    <div class="xfs-grid" id="xfsCards"></div>
+    <div class="xfs-card">
+      <h3>Folders</h3>
+      <div class="xfs-tablewrap"><table id="xfsFolders"></table></div>
+      <p class="xfs-muted xfs-small" id="xfsLibs" style="margin-bottom:0"></p>
+    </div>
+    <div class="xfs-card">
+      <h3>Category changes at the provider</h3>
+      <div id="xfsChanges" class="xfs-muted">None seen yet.</div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="xfs-pane" data-pane="categories">
+    <div class="xfs-alert">Untick categories to leave them out. A folder name gives a category its own top-level folder, so it can be its own Emby library. <b>Save and refresh</b> applies the changes.</div>
+    <div class="xfs-row" style="margin-bottom:1em">
+      <button is="emby-button" type="button" class="raised" id="xfsLive"><span>Check the provider for new categories</span></button>
+      <button is="emby-button" type="button" class="raised button-submit" id="xfsCatSave"><span>Save and refresh</span></button>
+      <span id="xfsCatNote" class="xfs-muted"></span>
+    </div>
+    <div id="xfsCatPanes"></div>
+  </div>
+
+  <!-- Settings -->
+  <div class="xfs-pane" data-pane="settings">
+    <form id="xfsSettingsForm">
+      <div class="verticalSection">
+        <h2>.strm folder</h2>
+        <div class="inputContainer">
+          <div class="xfs-row" style="flex-wrap:nowrap">
+            <div style="flex:1"><input is="emby-input" type="text" id="StrmFolder" label="Folder for the .strm library" /></div>
+            <button is="emby-button" type="button" class="raised" id="xfsBrowse"><span>Browse</span></button>
+          </div>
+          <div class="fieldDescription">xtreamfs writes Movies, TV and any category folders here. Point your Emby libraries at those subfolders. Pick an empty folder: files xtreamfs didn't write are left alone, but this folder is xtreamfs's to manage.</div>
+        </div>
+      </div>
+      <div class="verticalSection">
+        <h2>Folders</h2>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="MovieCategoryFolders" /><span>Movie category subfolders (Movies/&lt;Category&gt;/&lt;Title&gt;)</span></label>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="SeriesCategoryFolders" /><span>TV category subfolders (TV/&lt;Category&gt;/&lt;Show&gt;)</span></label>
+        <div class="fieldDescription" style="margin-bottom:1.2em">TV libraries treat each folder directly under TV as a show, so with TV subfolders on, add every category folder to the library separately. Usually best left off. Turning either option on or off moves every title once.</div>
+        <div class="inputContainer"><input is="emby-input" type="text" id="SeriesOverrides" label="Send shows to a folder by TMDB ID" /><div class="fieldDescription">For example 46260,31910=Anime;1234=Kids</div></div>
+        <div class="inputContainer"><input is="emby-input" type="text" id="MovieOverrides" label="Send movies to a folder by TMDB ID" /><div class="fieldDescription">For example 128,129=Anime Movies</div></div>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="StripPrefix" /><span>Remove provider tags like "EN - " and "SUB:" from titles</span></label>
+      </div>
+      <div class="verticalSection">
+        <h2>Metadata files</h2>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="WriteNfo" /><span>Write .nfo files from the provider's catalog</span></label>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="LockNfo" /><span>Lock them, so Emby keeps these details and skips online lookups</span></label>
+        <div class="fieldDescription">Locked titles get no artwork from Emby's image downloaders. Leave both off to let Emby fetch everything from TMDB.</div>
+      </div>
+      <div class="verticalSection">
+        <h2>Refresh</h2>
+        <div class="inputContainer"><input is="emby-input" type="number" step="any" min="0" id="ApiDelay" label="Pause between provider API calls (seconds)" /><div class="fieldDescription">Higher is gentler on the provider, but refreshes take longer.</div></div>
+        <div class="inputContainer"><input is="emby-input" type="number" step="any" min="0" id="ShrinkGuardPercent" label="Shrink guard (%)" /><div class="fieldDescription">Keep the previous library if a refresh would remove more than this share of movies or shows. 0 turns it off.</div></div>
+        <div class="inputContainer"><input is="emby-input" type="number" step="1" min="0" id="ShrinkGuardMin" label="Shrink guard minimum" /><div class="fieldDescription">Ignore the guard for libraries smaller than this.</div></div>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="ScanLibraryAfterRefresh" /><span>Scan Emby libraries after each refresh</span></label>
+        <div class="fieldDescription">Not needed if real-time monitoring is on for the libraries. The refresh schedule is under <a is="emby-linkbutton" class="button-link" href="#!/scheduledtasks">Scheduled Tasks</a> (Refresh xtreamfs catalog).</div>
+      </div>
+      <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+    </form>
+  </div>
+
+  <!-- Account -->
+  <div class="xfs-pane" data-pane="account">
+    <div class="xfs-card">
+      <div class="xfs-row xfs-between">
+        <div>
+          <h3>Provider account</h3>
+          <div class="xfs-phase" id="xfsAcctState">…</div>
+          <div class="xfs-muted" id="xfsAcctDetail" style="margin-top:.35em"></div>
+        </div>
+        <button is="emby-button" type="button" class="raised" id="xfsAcctCheck"><span>Check again</span></button>
+      </div>
+      <div class="xfs-grid" id="xfsAcctGrid" style="margin:1em 0 0"></div>
+    </div>
+    <form id="xfsLoginForm" class="verticalSection">
+      <h2>Login</h2>
+      <p class="xfs-muted">The same server address, username and password your IPTV player uses. Test checks them with the provider without saving.</p>
+      <div class="inputContainer"><input is="emby-input" type="text" id="ServerUrl" label="Server address" autocomplete="off" /><div class="fieldDescription">Include the port if your provider gives one, e.g. http://provider.example.com:8080</div></div>
+      <div class="inputContainer"><input is="emby-input" type="text" id="Username" label="Username" autocomplete="off" /></div>
+      <div class="inputContainer"><input is="emby-input" type="password" id="Password" label="Password" autocomplete="new-password" /><div class="fieldDescription" id="xfsPassNote"></div></div>
+      <div class="inputContainer"><input is="emby-input" type="text" id="UserAgent" label="User agent" /><div class="fieldDescription">Some providers only accept known players.</div></div>
+      <div class="xfs-row">
+        <button is="emby-button" type="button" class="raised" id="xfsTest"><span>Test connection</span></button>
+        <button is="emby-button" type="submit" class="raised button-submit"><span>Save login</span></button>
+        <span class="xfs-note" id="xfsLoginNote"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Log -->
+  <div class="xfs-pane" data-pane="log">
+    <div class="xfs-row" style="margin-bottom:.8em">
+      <div style="flex:1;min-width:14em"><input is="emby-input" type="text" id="xfsLogFilter" label="Filter" /></div>
+      <label class="checkboxContainer" style="margin:0"><input is="emby-checkbox" type="checkbox" id="xfsLogFollow" checked /><span>Follow</span></label>
+    </div>
+    <div class="xfs-log" id="xfsLog"></div>
+  </div>
+
+</div>
+</div>
+</div>
