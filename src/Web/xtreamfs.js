@@ -84,6 +84,8 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
                 return c;
             });
         }
+        // Saved settings without touching the form, so a save never overwrites what was just typed.
+        function fetchConfig() { return ApiClient.getPluginConfiguration(pluginId); }
         function saveConfig(c, msg) {
             loading.show();
             return ApiClient.updatePluginConfiguration(pluginId, c).then(function (r) {
@@ -314,7 +316,7 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
         });
         $('#xfsSettingsForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            loadConfig().then(function (c) {
+            fetchConfig().then(function (c) {
                 var oldFolder = c.StrmFolder;
                 c.StrmFolder = $('#StrmFolder').value.trim();
                 c.SeriesOverrides = $('#SeriesOverrides').value.trim();
@@ -325,6 +327,7 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
                 ['MovieCategoryFolders', 'SeriesCategoryFolders', 'StripPrefix', 'WriteNfo', 'LockNfo', 'ScanLibraryAfterRefresh']
                     .forEach(function (k) { c[k] = $('#' + k).checked; });
                 saveConfig(c, 'Saved. The next refresh uses these settings.').then(function () {
+                    loadConfig();
                     if (c.StrmFolder && c.StrmFolder !== oldFolder) { toast('Folder changed. Run a refresh to fill it.'); }
                 });
             });
@@ -367,15 +370,15 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
         });
         $('#xfsLoginForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            var body = loginBody();
+            var body = loginBody(), agent = $('#UserAgent').value.trim();
             note('Testing and saving…', true);
             postJson('xtreamfs/login/test', body).then(function (r) {
                 var save = function () {
-                    loadConfig().then(function (c) {
+                    fetchConfig().then(function (c) {
                         var changed = c.ServerUrl !== body.ServerUrl || c.Username !== body.Username || (body.Password && body.Password !== c.Password);
                         c.ServerUrl = body.ServerUrl; c.Username = body.Username;
                         if (body.Password) { c.Password = body.Password; }
-                        c.UserAgent = $('#UserAgent').value.trim() || 'VLC/3.0.20 LibVLC/3.0.20';
+                        c.UserAgent = agent || 'VLC/3.0.20 LibVLC/3.0.20';
                         saveConfig(c, null).then(function () {
                             $('#Password').value = '';
                             note(changed ? 'Saved. Refresh started, because stream links include the login.' : 'Saved.', true);
