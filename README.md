@@ -64,6 +64,10 @@ The plugin targets `netstandard2.1` and needs no NuGet packages. It is compiled 
 
 The output is `out/XtreamFS.Emby.dll`. The `nuget.config` clears package sources so the build works offline.
 
+## Releases
+
+Releases are published by GitHub Actions (`.github/workflows/release.yml`). When a push to `main` changes `<Version>` in `XtreamFS.Emby.csproj`, the workflow builds the plugin and publishes `v<version>` with `XtreamFS.Emby.dll` attached. It can also be run by hand from **Actions → Release → Run workflow**. A version that already has a release is skipped.
+
 ## How it relates to xtreamfs
 
 | | xtreamfs (Docker) | xtreamfs for Emby |
