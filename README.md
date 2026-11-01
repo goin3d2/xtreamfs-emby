@@ -85,6 +85,6 @@ The plugin keeps its state in Emby's data folder, under `data/xtreamfs/`:
 | `episodes.json` | Episode-list cache |
 | `strm_manifest.json` | Files the plugin wrote |
 | `status.json` | Last refresh status |
-| `categories.json` | Provider categories and the titles in each, by Emby path and TMDB id (read by Emby Collections) |
+| `categories.json` | Provider categories and the titles in each, by Emby path and TMDB id (read by Emby Collections) ; a copy is also written to the top of the `.strm` folder |
 
 Deleting `episodes.json` makes the next refresh re-read every episode list. Deleting `state.json` lets paths be reassigned, which Emby will see as new items.

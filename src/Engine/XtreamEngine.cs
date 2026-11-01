@@ -151,7 +151,14 @@ namespace XtreamFS.Engine
                 };
                 var (tree, newState) = TreeBuilder.Build(catalog, state, opts);
                 Store.WriteJson(P("state.json"), newState.ToJson());
-                try { Store.WriteJson(P("categories.json"), CategoryIndex.Build(catalog, newState, c.StrmFolder)); }
+                try
+                {
+                    var index = CategoryIndex.Build(catalog, newState, c.StrmFolder);
+                    Store.WriteJson(P("categories.json"), index);
+                    // A copy at the top of the .strm folder, like the Docker version, so other
+                    // servers that only map that folder can read it. Not scanned as media.
+                    if (!string.IsNullOrEmpty(c.StrmFolder)) Store.WriteJson(Path.Combine(c.StrmFolder, "categories.json"), index);
+                }
                 catch (Exception ex) { Log.Warn("categories.json not written: " + ex.Message); }
                 var summary = Summary.From(catalog, tree);
                 Store.WriteJson(P("summary.json"), summary.ToJson());
