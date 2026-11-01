@@ -151,6 +151,8 @@ namespace XtreamFS.Engine
                 };
                 var (tree, newState) = TreeBuilder.Build(catalog, state, opts);
                 Store.WriteJson(P("state.json"), newState.ToJson());
+                try { Store.WriteJson(P("categories.json"), CategoryIndex.Build(catalog, newState, c.StrmFolder)); }
+                catch (Exception ex) { Log.Warn("categories.json not written: " + ex.Message); }
                 var summary = Summary.From(catalog, tree);
                 Store.WriteJson(P("summary.json"), summary.ToJson());
                 _summary = summary; _summaryLoaded = true;
