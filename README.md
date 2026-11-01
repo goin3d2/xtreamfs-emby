@@ -9,10 +9,12 @@ It writes the same folder layout and file names as xtreamfs, so you can switch b
 - **Dashboard page** (Dashboard → xtreamfs) with five tabs:
   - **Status**: a getting-started checklist, a **Refresh now** button, live progress with phase, counts and ETA, catalog totals, a folder table, the Emby libraries that use these folders, and the most recent changes.
   - **Categories**: pick movie and series categories from the provider's live list, exclude some, and give any category its own top-level folder (for example `Anime`).
-  - **Settings**: the `.strm` folder (with a folder picker), folder layout, prefix stripping, `.nfo` writing and locking, the shrink guard, request delay, and whether to scan Emby libraries after a refresh.
+  - **Settings**: the `.strm` folder (with a folder picker), folder layout, prefix stripping, `.nfo` writing and locking, full movie details and artwork, the shrink guard, request delay, and whether to scan Emby libraries after a refresh.
   - **Account**: enter and test the provider login, then see account status, expiry and connection limits.
   - **Log**: a live log. Server addresses, usernames and passwords are masked.
 - **Scheduled task** "Refresh xtreamfs catalog" runs every 12 hours by default. Change the schedule in Dashboard → Scheduled Tasks.
+- **Full movie details** (optional): one `get_vod_info` request per film, cached in `movie_details.json`, adds plot, genres, director, cast, release date, runtime, backdrop and trailer to each movie's `.nfo`. The first refresh takes a few hours on a big catalog; later ones only fetch new movies.
+- **Movie artwork** (optional): saves each movie's poster and backdrop next to it as `poster.jpg` and `fanart.jpg`, so Emby doesn't download its own.
 - **Shrink guard**: if the provider suddenly returns far fewer titles, the refresh stops before deleting files. **Accept the smaller library** on the Status tab lets the smaller catalog through.
 - **Show copies are merged.** A 4K or Dolby Vision copy of a show goes into the same folder with a ` - 4K` / ` - 4K DV` label, so it isn't listed as a second show.
 - **Stable paths.** A title keeps its path across refreshes, so Emby keeps its metadata and watch history.
@@ -44,6 +46,7 @@ Requires Emby Server 4.8 or newer.
 - Keep TV categories out of category folders unless each category is its own library. Otherwise Emby can treat category folders as shows.
 - The provider doesn't supply stream details, so Emby fills in media info the first time an item is played.
 - `.nfo` files give Emby titles, plots, years and TMDB ids without a lookup. **Lock** adds `<lockdata>` so Emby won't overwrite them.
+- With **Full movie details** and **Download movie artwork** on and the `.nfo` files locked, Emby's movie scan makes no online requests at all. Unlocked, Emby shows the provider's details straight away and still adds actor photos, age ratings and collections from TMDB later.
 
 ## Build
 
@@ -89,6 +92,7 @@ The plugin keeps its state in Emby's data folder, under `data/xtreamfs/`:
 | `episodes.json` | Episode-list cache |
 | `strm_manifest.json` | Files the plugin wrote |
 | `status.json` | Last refresh status |
+| `movie_details.json` | Full movie details cache (with **Full movie details** on) |
 | `categories.json` | Provider categories and the titles in each, by Emby path and TMDB id (read by Emby Collections) ; a copy is also written to the top of the `.strm` folder |
 
 Deleting `episodes.json` makes the next refresh re-read every episode list. Deleting `state.json` lets paths be reassigned, which Emby will see as new items.

@@ -93,6 +93,8 @@ namespace XtreamFS.Engine
         public void Info(string m) => Add("INFO", m);
         public void Warn(string m) => Add("WARNING", m);
         public void Error(string m) => Add("ERROR", m);
+        /// <summary>Only to Emby's own log (at debug level), not the dashboard.</summary>
+        public void Debug(string m) { try { _forward?.Invoke("DEBUG", _scrub(m ?? "")); } catch { } }
 
         void Add(string level, string message)
         {

@@ -4,7 +4,8 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
     var pluginId = '6c2f0d5e-8a3b-4b7e-9c41-2f5d8e7a1b30';
     var PHASES = {
         idle: 'Idle', categories: 'Reading categories', movies: 'Movie categories', series: 'Series categories',
-        episodes: 'Downloading episode lists', building: 'Building folders', writing: 'Writing .strm files'
+        episodes: 'Downloading episode lists', building: 'Building folders', writing: 'Writing .strm files',
+        details: 'Downloading movie details', artwork: 'Downloading artwork'
     };
 
     function esc(s) {
@@ -77,7 +78,7 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
                     var el = $('#' + k); if (el && document.activeElement !== el) { el.value = c[k] || ''; }
                 });
                 ['ApiDelay', 'ShrinkGuardPercent', 'ShrinkGuardMin'].forEach(function (k) { $('#' + k).value = c[k]; });
-                ['MovieCategoryFolders', 'SeriesCategoryFolders', 'StripPrefix', 'WriteNfo', 'LockNfo', 'ScanLibraryAfterRefresh']
+                ['MovieCategoryFolders', 'SeriesCategoryFolders', 'StripPrefix', 'WriteNfo', 'LockNfo', 'MovieDetails', 'MovieArtwork', 'ScanLibraryAfterRefresh']
                     .forEach(function (k) { $('#' + k).checked = !!c[k]; });
                 $('#Password').value = '';
                 $('#xfsPassNote').textContent = c.Password ? 'Saved. Leave blank to keep it.' : 'Not set.';
@@ -116,10 +117,11 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
                     if (s.total) {
                         pct = Math.round(s.done * 100 / s.total);
                         if (s.phase === 'writing') { detail = pct + '%'; }
-                        else { detail = fmtN(s.done) + ' of ' + fmtN(s.total) + (s.phase === 'episodes' ? ' shows' : ' categories') + ' (' + pct + '%)'; }
+                        else { detail = fmtN(s.done) + ' of ' + fmtN(s.total) + ({ episodes: ' shows', details: ' movies', artwork: ' images' }[s.phase] || ' categories') + ' (' + pct + '%)'; }
                     }
-                    if (s.detail && s.phase !== 'writing') { detail += (detail ? '<br>' : '') + '<span class="xfs-muted">' + (s.phase === 'episodes' ? 'Now reading: ' : '') + esc(s.detail) + '</span>'; }
-                    meta = 'Started ' + ago(s.started, now) + (s.eta != null && s.phase === 'episodes' ? ', about ' + dur(s.eta) + ' left' : '');
+                    var long = s.phase === 'episodes' || s.phase === 'details';
+                    if (s.detail && s.phase !== 'writing') { detail += (detail ? '<br>' : '') + '<span class="xfs-muted">' + (long ? 'Now reading: ' : '') + esc(s.detail) + '</span>'; }
+                    meta = 'Started ' + ago(s.started, now) + (s.eta != null && long ? ', about ' + dur(s.eta) + ' left' : '');
                 } else {
                     meta = d.next_at ? 'Next scheduled refresh ' + inT(d.next_at, now) + ' (' + clock(d.next_at) + ')' : '';
                     if (s.last) { detail = lastText(s.last, now); }
@@ -324,7 +326,7 @@ define(['loading', 'emby-input', 'emby-button', 'emby-checkbox', 'emby-select'],
                 c.ApiDelay = parseFloat($('#ApiDelay').value) || 0;
                 c.ShrinkGuardPercent = parseFloat($('#ShrinkGuardPercent').value) || 0;
                 c.ShrinkGuardMin = parseInt($('#ShrinkGuardMin').value, 10) || 0;
-                ['MovieCategoryFolders', 'SeriesCategoryFolders', 'StripPrefix', 'WriteNfo', 'LockNfo', 'ScanLibraryAfterRefresh']
+                ['MovieCategoryFolders', 'SeriesCategoryFolders', 'StripPrefix', 'WriteNfo', 'LockNfo', 'MovieDetails', 'MovieArtwork', 'ScanLibraryAfterRefresh']
                     .forEach(function (k) { c[k] = $('#' + k).checked; });
                 saveConfig(c, 'Saved. The next refresh uses these settings.').then(function () {
                     loadConfig();

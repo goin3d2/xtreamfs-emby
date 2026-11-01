@@ -142,6 +142,14 @@
         <div class="fieldDescription">Locked titles get no artwork from Emby's image downloaders. Leave both off to let Emby fetch everything from TMDB.</div>
       </div>
       <div class="verticalSection">
+        <h2>Movies</h2>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="MovieDetails" /><span>Full movie details from the provider</span></label>
+        <div class="fieldDescription" style="margin-bottom:1.2em">Asks the provider for each movie's plot, genres, director, cast, release date, runtime and backdrop, and writes them into the movies' .nfo files (movies get one even with .nfo files off). One request per film, two at a time, cached: the first refresh takes a few hours on a big catalog, later ones only fetch new movies.</div>
+        <label class="checkboxContainer"><input is="emby-checkbox" type="checkbox" id="MovieArtwork" /><span>Download movie artwork</span></label>
+        <div class="fieldDescription">Saves each movie's poster and backdrop next to it (poster.jpg, fanart.jpg), so Emby doesn't download its own. About 250 KB per movie. Turning it off deletes them.</div>
+        <div class="fieldDescription">The provider doesn't have actor photos, age ratings or collections. With the .nfo files unlocked, Emby still adds those from TMDB at its own pace.</div>
+      </div>
+      <div class="verticalSection">
         <h2>Refresh</h2>
         <div class="inputContainer"><input is="emby-input" type="number" step="any" min="0" id="ApiDelay" label="Pause between provider API calls (seconds)" /><div class="fieldDescription">Higher is gentler on the provider, but refreshes take longer.</div></div>
         <div class="inputContainer"><input is="emby-input" type="number" step="any" min="0" id="ShrinkGuardPercent" label="Shrink guard (%)" /><div class="fieldDescription">Keep the previous library if a refresh would remove more than this share of movies or shows. 0 turns it off.</div></div>

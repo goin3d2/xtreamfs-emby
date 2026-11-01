@@ -43,5 +43,9 @@ namespace XtreamFS
         // Metadata files
         public bool WriteNfo { get; set; }
         public bool LockNfo { get; set; }
+        /// <summary>Fetch each movie's full details from the provider (cached) and write them into its .nfo.</summary>
+        public bool MovieDetails { get; set; }
+        /// <summary>Download each movie's poster and backdrop into its folder.</summary>
+        public bool MovieArtwork { get; set; }
     }
 }

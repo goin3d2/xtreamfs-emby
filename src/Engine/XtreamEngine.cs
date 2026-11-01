@@ -84,17 +84,20 @@ namespace XtreamFS.Engine
             }
             var c = _config();
             var sel = Selection.From(c);
+            bool extras = c.MovieDetails || c.MovieArtwork;
             Action<string, long, long> onPhase = (phase, done, total) =>
             {
                 double frac = total > 0 ? (double)done / total : 0;
                 double pct;
                 switch (phase)
                 {
-                    case "movies": pct = 2 + 10 * frac; break;
-                    case "series": pct = 12 + 6 * frac; break;
-                    case "episodes": pct = 18 + 67 * frac; break;
-                    case "building": pct = 85; break;
-                    case "writing": pct = 88 + 12 * frac; break;
+                    case "movies": pct = 2 + (extras ? 6 : 10) * frac; break;
+                    case "series": pct = extras ? 8 + 4 * frac : 12 + 6 * frac; break;
+                    case "episodes": pct = extras ? 12 + 38 * frac : 18 + 67 * frac; break;
+                    case "building": pct = extras ? 50 : 85; break;
+                    case "details": pct = 52 + 28 * frac; break;
+                    case "writing": pct = extras ? 80 + 5 * frac : 88 + 12 * frac; break;
+                    case "artwork": pct = 85 + 15 * frac; break;
                     default: pct = 1; break;
                 }
                 progress?.Report(pct);
@@ -165,12 +168,42 @@ namespace XtreamFS.Engine
                 _summary = summary; _summaryLoaded = true;
                 Log.Info($"Catalog ready: {tree.Files.Count} files");
 
-                Status.SetPhase("writing", c.StrmFolder);
+                var detailsPath = P("movie_details.json");
+                var details = Store.ReadJson(detailsPath) as Dictionary<string, object> ?? new Dictionary<string, object>();
                 var writer = new StrmWriter(c.StrmFolder, DataDir, Log, Status)
                 {
                     Nfo = c.WriteNfo, LockNfo = c.LockNfo, StripPrefix = c.StripPrefix,
+                    MovieDetailsOn = c.MovieDetails, Artwork = c.MovieArtwork, Details = details, UserAgent = c.UserAgent,
                 };
-                writer.Sync(tree, frac => Status.SetPhase("writing", c.StrmFolder, (long)(frac * 1000), 1000));
+                void Write() =>
+                    writer.Sync(tree, frac => Status.SetPhase("writing", c.StrmFolder, (long)(frac * 1000), 1000));
+                if (c.MovieDetails && catalog.Movies.Count > 0)
+                {
+                    // On a big first run, write the .strm files first so the library isn't held up for hours.
+                    if (MovieDetails.Pending(details, catalog) > 500)
+                    {
+                        Status.SetPhase("writing", c.StrmFolder);
+                        Write();
+                    }
+                    try
+                    {
+                        await MovieDetails.Fetch(xt, catalog, details, () => Store.WriteJson(detailsPath, details),
+                                                 Status, Log, c.StripPrefix, ct).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) { throw; }
+                    catch (Exception ex) // details are extra; the catalog itself is fine
+                    {
+                        Log.Error("Movie details stopped: " + Scrub(ex.Message));
+                        Store.WriteJson(detailsPath, details);
+                    }
+                }
+                Status.SetPhase("writing", c.StrmFolder);
+                Write();
+                if (writer.PendingArt > 0)
+                {
+                    Status.SetPhase("artwork", "", 0, writer.PendingArt);
+                    await writer.DownloadArtAsync(ct, (done, total) => Status.SetPhase("artwork", "", done, total)).ConfigureAwait(false);
+                }
                 Status.Last = new Dictionary<string, object>
                 {
                     ["time"] = Naming.Now(), ["result"] = "ok", ["files"] = (long)tree.Files.Count,

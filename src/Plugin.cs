@@ -29,6 +29,7 @@ namespace XtreamFS
                     // Pass the text as an argument so braces in titles aren't read as format codes.
                     if (level == "ERROR") logger.Error("{0}", message);
                     else if (level == "WARNING") logger.Warn("{0}", message);
+                    else if (level == "DEBUG") logger.Debug("{0}", message);
                     else logger.Info("{0}", message);
                 });
         }

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><Nullable>disable</Nullable><LangVersion>latest</LangVersion></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Engine/*.cs" />
+    <Compile Include="../../src/PluginConfiguration.cs" />
+    <Reference Include="MediaBrowser.Model"><HintPath>../../emby-sdk/MediaBrowser.Model.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>
