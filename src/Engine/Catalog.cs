@@ -285,10 +285,15 @@ namespace XtreamFS.Engine
                             var m = Pick(raw, MovieKeys);
                             m["_folder"] = folder ?? "Movies";
                             m["_cat"] = cid;
+                            m["_cats"] = new List<object> { cid };
                             movies[sid] = m;
                             order.Add(m);
                         }
-                        else if (folder != null) existing["_folder"] = folder; // a category with its own folder wins
+                        else
+                        {
+                            if (folder != null) existing["_folder"] = folder; // a category with its own folder wins
+                            AddCat(existing, cid);
+                        }
                     }
                 }
                 catalog.Movies = order;
@@ -297,6 +302,13 @@ namespace XtreamFS.Engine
             if (_sel.SeriesCats.Count > 0)
                 catalog.Series = await FetchSeries(old, catalog, ct).ConfigureAwait(false);
             return catalog;
+        }
+
+        /// <summary>Records every category a title is listed in (titles can be in several).</summary>
+        static void AddCat(Dictionary<string, object> item, string cid)
+        {
+            if (!(Json.Get(item, "_cats") is List<object> cats)) item["_cats"] = cats = new List<object>();
+            if (!cats.Contains(cid)) cats.Add(cid);
         }
 
         async Task<List<Dictionary<string, object>>> FetchSeries(Summary old, Catalog catalog, CancellationToken ct)
@@ -329,10 +341,15 @@ namespace XtreamFS.Engine
                     {
                         var s = Pick(raw, SeriesKeys);
                         s["_folder"] = folder ?? "TV";
+                        s["_cats"] = new List<object> { cid };
                         byId[sid] = s;
                         shows.Add(s);
                     }
-                    else if (folder != null) existing["_folder"] = folder;
+                    else
+                    {
+                        if (folder != null) existing["_folder"] = folder;
+                        AddCat(existing, cid);
+                    }
                 }
             }
 
